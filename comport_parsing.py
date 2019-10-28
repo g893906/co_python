@@ -21,9 +21,9 @@ import sys
 
 ser = serial.Serial()
 
-ser.port = "/dev/ttyS5" #set the com port number
+ser.port = "/dev/ttyS15" #set the com port number
 
-ser.baudrate = 9600     #set the baudrate
+ser.baudrate = 115200     #set the baudrate
 ser.bytesize = serial.EIGHTBITS #number of bits per bytes
 ser.parity = serial.PARITY_NONE #set parity check: no parity
 ser.stopbits = serial.STOPBITS_ONE #number of stop bits
@@ -69,14 +69,20 @@ if ser.isOpen():
                         #response = ser.readline()
                         response = ser.readline().decode('utf-8')
                         #msg = 'read data %s.' %response
-                        if ( 'I2C' in response):
+                        if ( 'bytes' in response):
                             logtime = time.time()
                             st_time = datetime.datetime.fromtimestamp(logtime).strftime('%Y-%m-%d %H:%M:%S')
                             wlog.write(st_time+' '+response)
+                            if ( (numOfLines%2) >0 ):
+                                ser.setRTS(False)
+                                ser.setDTR(False)
+                            else:
+                                ser.setRTS(True)
+                                ser.setDTR(True) 
                             print(response)
                             numOfLines = numOfLines + 1
-                            if (numOfLines >= 5):
-                                break
+                            #if (numOfLines >= 5):
+                            #    break
                 ser.close()
                 wlog.close()
 
