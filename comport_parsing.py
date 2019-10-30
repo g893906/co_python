@@ -53,7 +53,7 @@ try:
 except getopt.GetoptError as e:
         print ("error openning serial port",str(e))
         exit()
-
+flag=0
 if ser.isOpen():
         try:
                 ser.flushInput() #flush input buffer, discarding all its contents
@@ -66,7 +66,7 @@ if ser.isOpen():
                 numOfLines = 0
 
                 while True:
-                        #response = ser.readline()
+                        response = ser.readline()
                         response = ser.readline().decode('utf-8')
                         #msg = 'read data %s.' %response
                         if ( 'bytes' in response):
@@ -83,6 +83,45 @@ if ser.isOpen():
                             numOfLines = numOfLines + 1
                             #if (numOfLines >= 5):
                             #    break
+                        elif ( 'ZynqMP>' in response):
+                            print(response)
+                            ser.write("bootm\n".encode())
+                        elif ( 'login:' in response):
+                            print(response)
+                            time.sleep(2)
+                            ser.write("root\n".encode())
+                        elif ( 'Password:' in response):
+                            print(response)
+                            time.sleep(2)
+                            ser.write("root\n".encode())
+                        elif ( 'root@se_gsi_apu_18_wnc:~#' in response ):
+                            print(response)
+                            logtime = time.time()
+                            st_time = datetime.datetime.fromtimestamp(logtime).strftime('%Y-%m-%d %H:%M:%S')
+                            if flag==0:
+                                data='ifconfig eth0 192.168.33.10\n'
+                                #data=data.encode("utf-8").decode("cp950","ignore")
+                                data=data.encode()
+                                ser.write(data)
+                                flag=flag+1;
+                                wlog.write(st_time+' '+"ifconfig")
+                            elif flag==1:
+                                data="tftp -g -r BOOT.bin 192.168.33.60\n"
+                                data=data.encode()
+                                ser.write(data)
+                                wlog.write(st_time+' '+"tftp")
+                                flag=flag+1;
+                            elif flag==2:
+                                data="mv BOOT.bin BOOT1.bin\n"
+                                data=data.encode()
+                                ser.write(data)
+                                wlog.write(st_time+' '+"mv")
+                                flag=flag+1;
+                            elif flag==3:
+                                data="tftp -p -l BOOT1.bin 192.168.33.60\n"
+                                data=data.encode()
+                                ser.write(data)
+                                wlog.write(st_time+' '+"tftp -p")
                 ser.close()
                 wlog.close()
 
