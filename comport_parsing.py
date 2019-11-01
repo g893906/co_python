@@ -37,13 +37,16 @@ class serial_port:
         self.log_path="123"
         self.time_start= 0
         self.time_end  = 0	  
+        self.phydly  = "0x00"
+        self.cnt = 0
         self.enTimeOut = 0		  
+        first_log_path = 0
         self.inEndLoop = 0
     def open(self,comport,baudrate,to):
         print ("com port initial")
         print(comport)
         print(baudrate)
-        self.ser = serial.Serial(comport, 9600, timeout=float(to))
+        self.ser = serial.Serial(comport, baudrate, timeout=float(to))
         self.time_start = time.time()
     def write(self,cmd):
         cmd = cmd.encode("utf-8")
@@ -76,7 +79,9 @@ class serial_port:
         global err_flag
         global test_cnt
         global stop_run
-        if (self.inEndLoop != 1 and first_log_path != 1):
+        logtime = time.time()
+        st_time = datetime.datetime.fromtimestamp(logtime).strftime('%Y-%m-%d %H:%M:%S')
+        if (first_log_path != 1):
             ser_port.log_path = log_folder_path+str(today.hour)+"-"+str(today.minute)+".log"
         first_log_path = 1
         
@@ -92,7 +97,7 @@ class serial_port:
         if (self.inEndLoop != 1):
             print("com port read5")
             fp_log = FileIO(self.log_path,"a")
-        if ( 'I2C' in input):
+        if ( 'ZynqMP>' in input):
             self.inEndLoop = 0
             boot_proc_check = 0
             wusb_cycle_check = 0
@@ -101,28 +106,68 @@ class serial_port:
             rsdc_cycle_check = 0
             emac_cycle_check = 0
             video_cycle_check = 0
-            first_log_path = 0
             slt_test_res = 0
             sensor_run = 1
             err_flag = 0
             stop_run = 0
             self.time_start = time.time()
-            today = datetime.datetime.now()
             fp_log = FileIO(self.log_path,"a")
-            fp_log.f_write('PASS: Boot process, Power on')
             fp_log.f_close()
+            self.write("dhcp\n")
+            #self.write("bootm\n")
+        elif ( 'Retry time exceeded' in input):
+            print(input)
+            time.sleep(2)
+            today = datetime.datetime.now()
+            if ( self.cnt==0 ):
+                self.phydly = '0x07'
+            elif ( self.cnt==1):
+                self.phydly = '0x17'
+            elif ( self.cnt==2):
+                self.phydly = '0x27'
+            elif ( self.cnt==3):
+                self.phydly = '0x37'
+            elif ( self.cnt==4):
+                self.phydly = '0x47'
+            elif ( self.cnt==5):
+                self.phydly = '0x57'
+            elif ( self.cnt==6):
+                self.phydly = '0x67'
+            elif ( self.cnt==7):
+                self.phydly = '0x77'
+            elif ( self.cnt==8):
+                self.phydly = '0x87'
+            elif ( self.cnt==9):
+                self.phydly = '0x97'
+            elif ( self.cnt==10):
+                self.phydly = '0xa7'
+            elif ( self.cnt==11):
+                self.phydly = '0xb7'
+            elif ( self.cnt==12):
+                self.phydly = '0xc7'
+            elif ( self.cnt==13):
+                self.phydly = '0xd7'
+            elif ( self.cnt==14):
+                self.phydly = '0xe7'
+            elif ( self.cnt==15):
+                self.phydly = '0xf7'
+            print("the phy delay value="+self.phydly)
+            self.cnt = self.cnt+1
             self.write("mii write 5 d 1f\n" )
             self.write("mii write 5 e 86\n" )
             self.write("mii write 5 d 401f\n" )
             self.write("mii write 5 e 0x08\n" )
             self.write("mii read 5 e\n" )
-            self.write("bootm\n")
-        elif ( 'login:' in input):
-            print(input)
-            time.sleep(2)
-            self.write("root\r\n".encode())
-            time.sleep(2)
-            self.write("root\r\n".encode())
+            self.write("mii write 5 e "+self.phydly+"\n" )
+            fp_log.f_write(st_time+' '+"Set the PHY delay="+self.phydly)
+            fp_log.f_close()
+            self.write("dhcp\n")
+        elif ( 'Unhandled' in input):
+            fp_log.f_write(input)
+            fp_log.f_close()
+        elif ( 'BOOTP' in input):
+            fp_log.f_write(input)
+            fp_log.f_close()
         elif ( 'Password:' in input):
             print(input)
             time.sleep(2)
@@ -138,19 +183,14 @@ class serial_port:
             data='ping -c 100 192.168.33.60\n'
             self.write(data)
         elif ( 'Scan' in input ):
-            print(input)
-            logtime = time.time()
-            st_time = datetime.datetime.fromtimestamp(logtime).strftime('%Y-%m-%d %H:%M:%S')
             fp_log.f_write(st_time+' '+input)
             fp_log.f_close()
         elif ( 'round-trip' in input ):
-            print(input)
-            logtime = time.time()
-            st_time = datetime.datetime.fromtimestamp(logtime).strftime('%Y-%m-%d %H:%M:%S')
             fp_log.f_write(st_time+' '+input)
             fp_log.f_close()
         else:
-            print("read 6, no key word get")
+            fp_log.f_write(st_time+' '+input)
+            fp_log.f_close()
 def UART0( COM_N,BAUDRATE ):
     print ("com port node is:"+COM_N)
     print ("com port baudrate is:"+BAUDRATE)
