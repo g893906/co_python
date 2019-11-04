@@ -191,6 +191,9 @@ class serial_port:
         else:
             fp_log.f_write(st_time+' '+input)
             fp_log.f_close()
+
+
+
 def UART0( COM_N,BAUDRATE ):
     print ("com port node is:"+COM_N)
     print ("com port baudrate is:"+BAUDRATE)
@@ -221,6 +224,9 @@ def manual_baudrate():
     string1 = input("please input the baudrate:")
     speed = str(string1)
     return speed
+
+
+
 ### START HERE ###
 
 cur_path = os.getcwd()
@@ -229,8 +235,9 @@ chk_path = os.path.exists(log_folder_path)
 if(chk_path != True):
     os.mkdir(log_folder_path)
 
-port = manual_conn_com()
-speed = manual_baudrate()
+port = manual_conn_com()    #select the ritht /dev/ttyS#
+speed = manual_baudrate()   #Select the right baudrate of the DUT
+
 try:
     #_thread.start_new_thread ( UART0,(port,speed,) )
     UART0(port,speed)
