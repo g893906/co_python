@@ -7,16 +7,21 @@ Time = input("Input the "+Time_zone+" time"", this program will cal. other locat
 if ('TW' in Time_zone):
     print( Time_zone + " time is:"+Time )
     Time = int(Time)
-    if( Time < 13):
-        ALT_time = Time + 11
+    if( Time < 12):
+        ALT_time = Time + 12
     else:
-        ALT_time = Time - 13
+        ALT_time = Time - 12
     if ( Time >= 6 ):
         Israel_time = Time - 6
     else:
         Israel_time = Time - 6 + 24 
+    if ( Time >15 ):
+        CA_time = Time - 15
+    else:
+        CA_time = Time -15 + 24 
     print("ALT time is:%d" %(ALT_time) )
     print("Israel time is:%d" %(Israel_time) )
+    print("California time is:%d" %(CA_time) )
 
 elif ('IL' in Time_zone):
     print( Time_zone + " time is:"+Time )
