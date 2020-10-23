@@ -1,6 +1,7 @@
 #!/usr/bin/python3.6
 
-Time_zone = input("Input the Time Location, TW or IL or ALT:") 
+while 1:
+    Time_zone = input("Input the Time Location, TW or IL or ALT:") 
 
 Time = input("Input the "+Time_zone+" time"", this program will cal. other location time:")
 
@@ -47,8 +48,7 @@ elif ('ALT' in Time_zone):
     if( TW_time >= 6 ):
         IL_time = TW_time - 6
     else:
-        IL_time = TW_time - 6 + 24
-    print("IL time is:%d" %(IL_time) )
-    print("TW time is:%d" %(TW_time) )
-else:
-    print("Please input the correct format location and time, bye!!!")
+        print("Please input the correct format location and time, bye!!!")
+    print( "\n\n") 
+    print( "!!===========  press CTRL+C to exit ===========!!") 
+    print( "\n\n") 
